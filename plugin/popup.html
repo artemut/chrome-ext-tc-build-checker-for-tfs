@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <title>TeamCity build status</title>
+  <style>
+    body { padding: 10px; }
+    div.popup-section { margin: 10px 0; }
+    div.popup-title { font-weight: bold; }
+    #tfs-hostname { width: 450px; }
+    #tc-urls { width: 450px; }
+  </style>
+</head>
+<body>
+  <div class="popup-section">
+    <div class="popup-title">
+      TFS Hostname:
+    </div>
+    <div id="tfs-hostname"></div>
+  </div>
+  <div class="popup-section">
+    <div class="popup-title">
+      TC Urls:
+    </div>
+    <div id="tc-urls"></div>
+  </div>
+  <div class="popup-section">
+    <button id="go-to-options">Go to options</button>
+  </div>
+  <script src="external/jquery-3.2.1.min.js"></script>
+  <script src="scripts/popup.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Options</title>
+  <style>
+    body { padding: 10px; }
+    p { padding: 0; margin: 0; }
+    div.option-title { font-weight: bold; }
+    div.option-description { font-size: 0.8em; color: grey; }
+    #tfs-hostname { width: 450px; }
+    #tc-urls { width: 450px; max-width: 450px; min-width: 450px; height: 100px; max-height: 100px; min-height: 100px; }
+    #status { margin-left: 10px; color: green; }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="option-title">
+      TFS Hostname:
+    </div>
+    <div class="option-description">
+      <p>Enter the Hostname of the Team Foundation Server where you want to apply the plugin.</p>
+      <p>Example:</p>
+      <p><i>my-tfs.com</i></p>
+    </div>
+    <div>
+      <input id="tfs-hostname">
+    </div>
+  </div>
+  <div>
+    <div class="option-title">
+      TC Urls:
+    </div>
+    <div class="option-description">
+      <p>Enter the URLs of all the Team City servers that launch builds from the TFS server specified above.</p>
+      <p>Example:</p>
+      <p><i>https://my-tc1.com</i></p>
+      <p><i>http://my-tc2.com</i></p>
+    </div>
+    <div>
+      <textarea id="tc-urls"></textarea>
+    </div>
+  </div>
+  <button id="save">Save</button><span id="status"></span>
+  <script src="external/jquery-3.2.1.min.js"></script>
+  <script src="scripts/options.js"></script>
+</body>
+</html>
