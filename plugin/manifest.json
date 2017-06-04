@@ -8,7 +8,9 @@
   "permissions": [
     "tabs",
     "declarativeContent",
-    "storage"
+    "storage",
+    "http://*/",
+    "https://*/"
   ],
 
   "options_ui": {
@@ -17,14 +19,19 @@
   },
 
   "background": {
-    "scripts": [ "scripts/background.js" ],
+    "scripts": [ "scripts/background.js", "scripts/teamCityClient.js" ],
     "persistent": false
   },
 
   "content_scripts": [{
     "matches": [ "<all_urls>" ],
-    "js": [ "external/jquery-3.2.1.min.js", "scripts/injector.js" ]
+    "css": [ "styles/injection.css" ],
+    "js": [ "external/jquery-3.2.1.min.js", "scripts/tfsPageAdapter.js", "scripts/injector.js" ]
   }],
+
+  "web_accessible_resources": [
+    "images/*"
+  ],
 
   "page_action": {
     "default_icon": {

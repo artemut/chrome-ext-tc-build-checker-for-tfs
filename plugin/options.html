@@ -5,42 +5,47 @@
   <style>
     body { padding: 10px; }
     p { padding: 0; margin: 0; }
-    div.option-title { font-weight: bold; }
-    div.option-description { font-size: 0.8em; color: grey; }
-    #tfs-hostname { width: 450px; }
-    #tc-urls { width: 450px; max-width: 450px; min-width: 450px; height: 100px; max-height: 100px; min-height: 100px; }
+    tr.title th { text-align: left; }
+    tr.description td { font-size: 0.8em; color: grey; }
+    input.tfs-hostname { width: 200px; }
+    input.tc-url { width: 200px; }
+    div.add-block { margin: 5px 0 0 3px; }
+    div.save-block { margin-top: 20px; }
     #status { margin-left: 10px; color: green; }
   </style>
 </head>
 <body>
-  <div>
-    <div class="option-title">
-      TFS Hostname:
-    </div>
-    <div class="option-description">
-      <p>Enter the Hostname of the Team Foundation Server where you want to apply the plugin.</p>
-      <p>Example:</p>
-      <p><i>my-tfs.com</i></p>
-    </div>
-    <div>
-      <input id="tfs-hostname">
-    </div>
+  <table id="options-table">
+    <tr class="title">
+      <th>TFS Hostname</th>
+      <th>TC Url</th>
+      <th></th>
+    </tr>
+    <tr class="description">
+      <td>
+        <p>Enter the Hostname of the Team Foundation Server where you want to apply the plugin.</p>
+        <p>Example:</p>
+        <p><i>my-tfs.com</i></p>
+      </td>
+      <td>
+        <p>Enter the URL of the Team City server that launches builds from the TFS server specified.</p>
+        <p>Example:</p>
+        <p><i>https://my-tc.com</i></p>
+      </td>
+      <td></td>
+    </tr>
+    <tr class="data">
+      <td><input class="tfs-hostname"/></td>
+      <td><input class="tc-url"/></td>
+      <td><button class="remove" disabled="disabled">Remove</button></td>
+    </tr>
+  </table>
+  <div class="add-block">
+    <button id="add">Add new row</button>
   </div>
-  <div>
-    <div class="option-title">
-      TC Urls:
-    </div>
-    <div class="option-description">
-      <p>Enter the URLs of all the Team City servers that launch builds from the TFS server specified above.</p>
-      <p>Example:</p>
-      <p><i>https://my-tc1.com</i></p>
-      <p><i>http://my-tc2.com</i></p>
-    </div>
-    <div>
-      <textarea id="tc-urls"></textarea>
-    </div>
+  <div class="save-block">
+    <button id="save">Save</button><span id="status"></span>
   </div>
-  <button id="save">Save</button><span id="status"></span>
   <script src="external/jquery-3.2.1.min.js"></script>
   <script src="scripts/options.js"></script>
 </body>
