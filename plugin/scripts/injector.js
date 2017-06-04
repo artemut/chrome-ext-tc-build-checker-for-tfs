@@ -2,131 +2,113 @@
 
     function Injector(tcUrls, tfsPageAdapter) {
 
-        var totalCount = tcUrls.length;
-        var inProgressCount = 0;
-        var successCount = 0;
-        var notFoundCount = 0;
-        var errorCount = 0;
-        var loaderBlock;
-        var errorBlock;
+        var tcTotalCount = tcUrls.length;
+        var tcInProgressCount = 0;
+        var tcSuccessCount = 0;
+        var tcNotFoundCount = 0;
+        var tcErrorCount = 0;
 
         this.run = function() {
-
-            if (tcUrls.length === 0) {
+            
+            if (tcTotalCount === 0) {
                 return;
             }
 
-            var container = tfsPageAdapter.getAppropriateContainer();
-            if (container.length === 0) {
-                return;
-            }
-            
-            // TODO: replace
-            var commitHash = '2ccf8e2c48f11c45bf789b8e2031e97d64f89732';
-            
-            var mainView = buildMainView();
-            container.prepend(mainView);
+            tfsPageAdapter.buildMainView(tcTotalCount);
+            tfsPageAdapter.buildLoaderBlock();
 
+            sendPullRequestRequest();
+            processPullRequestResponse();
+        };
+
+        var sendPullRequestRequest = function() {
+            tfsPageAdapter.updateLoaderBlock('tfs');
+            var request = {
+                tfsUrl: document.location.origin,
+                collectionNames: tfsPageAdapter.getCollectionNames(),
+                repositoryId: tfsPageAdapter.getRepositoryId(),
+                pullRequestId: tfsPageAdapter.getPullRequestId(),
+            };
+            chrome.runtime.sendMessage({ code: 'pull_request_request', request: request });
+        };
+
+        var processPullRequestResponse = function() {
+            chrome.runtime.onMessage.addListener(function(message) {
+                if (message.code === 'pull_request_response') {
+                    if (message.success === true) 
+                        if (typeof message.data.lastCommitHash === 'string' && message.data.lastCommitHash.length > 0)
+                            onPullRequestSuccess(message.data);
+                        else
+                            onPullRequestError('Unexpected', 'Could not get last commit hash');
+                    else 
+                        onPullRequestError(message.data.status, message.data.statusText);
+                }
+            });
+        };
+
+        var onPullRequestSuccess = function(data) {
+            if (data.isAbandoned !== true) {
+                sendBuildStatusRequests(data.lastCommitHash);
+                processBuildStatusResponses();
+            } else {
+                tfsPageAdapter.removeLoaderBlock();
+                tfsPageAdapter.buildPullRequestAbandonedBlock();
+            }
+        };
+
+        var onPullRequestError = function(status, statusText) {
+            tfsPageAdapter.removeLoaderBlock();
+            tfsPageAdapter.buildTfsErrorBlock(status, statusText);
+        };
+
+        var sendBuildStatusRequests = function(commitHash) {
             // send request for each TC url
             $.each(tcUrls, function(i, tcUrl) {
-                if (inProgressCount === 0) {
-                    loaderBlock = buildLoaderBlock();
-                    mainView.append(loaderBlock);
-                }
-                updateLoaderBlock(1);
-                inProgressCount++;
-                // send request for the current TC url
+                tcInProgressCount++;
+                tfsPageAdapter.updateLoaderBlock('tc', tcInProgressCount);
                 chrome.runtime.sendMessage({ code: 'build_status_request', tcUrl: tcUrl, commitHash: commitHash });
             });
-            
-            // handle responses
+        };
+
+        var processBuildStatusResponses = function() {
+            // handle responses for each TC url
             chrome.runtime.onMessage.addListener(function(message) {
                 if (message.code === 'build_status_response') {
-                    inProgressCount--;
-                    updateLoaderBlock(-1);
-                    if (message.success === true) {
-                        var blockHtml = buildSuccessBlock(message.data);
-                        mainView.append(blockHtml);
-                        successCount++;
-                    } else {
-                        if (message.data.status === 404) {
-                            notFoundCount++;
-                        } else {
-                            if (errorCount === 0) {
-                                errorBlock = buildErrorBlock();
-                                mainView.append(errorBlock);
-                            }
-                            extendErrorBlockTitle(message.data, message.fromTcUrl);
-                            errorCount++;
-                        }
-                    }
-                    if (inProgressCount === 0) {
-                        loaderBlock.remove();
-                        if (notFoundCount > 0 && successCount === 0) {
-                            notFoundBlock = buildNotFoundBlock();
-                            mainView.append(notFoundBlock);
-                        }
-                    }
+                    tcInProgressCount--;
+                    tfsPageAdapter.updateLoaderBlock('tc', tcInProgressCount);
+                    if (message.success === true) 
+                        onBuildStatusSuccess(message);
+                    else if (message.data.status === 404) 
+                        onBuildStatusNotFound(message);
+                    else 
+                        onBuildStatusError(message);
+                    if (tcInProgressCount === 0) 
+                        onBuildStatusLastResponse();
                 }
             });
         };
 
-        var buildMainView = function() {
-            var block = $('<div/>', { 'class': 'chrome-ext-tc-build-checker_build-main-view' });
-            var blockInfo = $('<div/>', { 'class': 'chrome-ext-tc-build-checker_info-block' });
-            blockInfo.html('TeamCity builds: ');
-            block.append(blockInfo);
-            return block;
+        var onBuildStatusSuccess = function(message) {
+            tfsPageAdapter.buildTcSuccessBlock(message.data);
+            tcSuccessCount++;
         };
 
-        var buildLoaderBlock = function() {
-            var block = $('<div/>', { 'class': 'chrome-ext-tc-build-checker_loader-block' });
-            var loaderIconUrl = 'chrome-extension://' + chrome.runtime.id + '/images/loader.gif';
-            var progressBlock = totalCount > 1 ? '<span>0</span>/' + totalCount : '';
-            block.html('<img src="' + loaderIconUrl + '"/>' + progressBlock);
-            return block;
+        var onBuildStatusNotFound = function(message) {
+            tcNotFoundCount++;
         };
 
-        var updateLoaderBlock = function(change) {
-            if (totalCount > 1) {
-                var blockSpan = $('span', loaderBlock);
-                var currentVal = parseInt(blockSpan.text());
-                var newVal = currentVal + change;
-                blockSpan.text(newVal);
+        var onBuildStatusError = function(message) {
+            if (tcErrorCount === 0) {
+                tfsPageAdapter.buildTcErrorBlock();
             }
+            tfsPageAdapter.extendTcErrorBlockTitle(message.fromTcUrl, message.data.status, message.data.statusText);
+            tcErrorCount++;
         };
 
-        var buildSuccessBlock = function(data) {
-            var block = $('<div/>', { 'class': 'chrome-ext-tc-build-checker_success-block' });
-            block.html('<a href="' + data.buildUrl + '" target="_blank" title="' + data.fullName + '"><img src="' + data.statusIconUrl + '"/></a>');
-            return block;
-        };
-
-        var buildNotFoundBlock = function() {
-            var block = $('<div/>', { 'class': 'chrome-ext-tc-build-checker_not-found-block' });
-            var text = totalCount === 1 ? 'Build was not found on the TC server' : 'Not found any build on other TC servers';
-            block.html(text);
-            return block;
-        };
-
-        var buildErrorBlock = function() {
-            var block = $('<div/>', { 'class': 'chrome-ext-tc-build-checker_error-block' });
-            var errorIconUrl = 'chrome-extension://' + chrome.runtime.id + '/images/error.png';
-            var errorCounter = totalCount > 1 ? '<span>0</span>/' + totalCount + ' TC server(s) are not valid' : 'TC server is not valid';
-            block.html('<img src="' + errorIconUrl + '"/>' + errorCounter);
-            return block;
-        };
-
-        var extendErrorBlockTitle = function(data, tcUrl) {
-            var blockImg = $('img', errorBlock);
-            var currentTitle = blockImg.attr('title');
-            var errorInfo = tcUrl + ' (' + data.status + (data.statusText !== '' ? ' ' + data.statusText : '') + ')';
-            var newTitle = currentTitle ? currentTitle + ', ' + errorInfo : 'Communication error: ' + errorInfo;
-            blockImg.attr('title', newTitle);
-            if (totalCount > 1) {
-                var blockSpan = $('span', errorBlock);
-                var currentVal = parseInt(blockSpan.text());
-                blockSpan.text(++currentVal);
+        var onBuildStatusLastResponse = function() {
+            tfsPageAdapter.removeLoaderBlock();
+            if (tcNotFoundCount > 0 && tcSuccessCount === 0) {
+                tfsPageAdapter.buildTcNotFoundBlock();
             }
         };
     }

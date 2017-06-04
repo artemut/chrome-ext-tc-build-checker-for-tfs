@@ -1,6 +1,7 @@
 div.chrome-ext-tc-build-checker_build-main-view { display: inline-table; }
     div.chrome-ext-tc-build-checker_info-block,
     div.chrome-ext-tc-build-checker_loader-block,
+    div.chrome-ext-tc-build-checker_abandoned-block,
     div.chrome-ext-tc-build-checker_success-block,
     div.chrome-ext-tc-build-checker_not-found-block,
     div.chrome-ext-tc-build-checker_error-block { display: inline-block; margin-right: 10px; font-size: 0.8em; }
