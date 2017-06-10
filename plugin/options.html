@@ -5,6 +5,7 @@
   <style>
     body { padding: 10px; }
     p { padding: 0; margin: 0; }
+    #warning { margin: 10px 0; padding: 10px; background-color: #efefef; }
     tr.title th { text-align: left; }
     tr.description td { font-size: 0.8em; color: grey; }
     input.tfs-hostname { width: 200px; }
@@ -15,6 +16,11 @@
   </style>
 </head>
 <body>
+  <div id="warning">
+    <p>Plugin was tested with TFS 2017 and TeamCity 10.x.</p>
+    <p>It may not work properly with older versions.</p>
+    <p>In case of errors, please, open an issue on the <a href="https://github.com/artemut/chrome-ext-tc-build-checker-for-tfs/issues">plugin's github repository</a>.</p>
+  </div>
   <table id="options-table">
     <tr class="title">
       <th>TFS Hostname</th>

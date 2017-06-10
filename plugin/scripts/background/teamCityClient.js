@@ -26,9 +26,14 @@
             var requestUrl = tcUrl + '/guestAuth/app/rest/10.0/builds/revision:' + commitHash + ',running:any';
             getJson(requestUrl, {
                 onSuccess: function(response) {
+                    var status = response.status.toLowerCase();
+                    var state = response.state.toLowerCase();
                     var data = {
                         buildUrl: response.webUrl,
                         fullName: response.buildType.projectName + ' > ' + response.buildType.name,
+                        isSucceeded: status === 'success' && state === 'finished', 
+                        isFailed: status === 'failure', 
+                        isRunning: status === 'success' && state !== 'finished', 
                         statusIconUrl: tcUrl + '/guestAuth/app/rest/10.0/builds/id:' + response.id + '/statusIcon'
                     };
                     // send data to the tab that sent this request

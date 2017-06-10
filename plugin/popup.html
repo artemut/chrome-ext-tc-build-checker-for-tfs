@@ -3,18 +3,27 @@
 <head>
   <title>TeamCity build status</title>
   <style>
-    body { padding: 10px; }
-    div.popup-section { margin: 10px 0; }
-    div.popup-title { font-weight: bold; }
-    #tfs-hostname { width: 450px; }
-    #tc-urls { width: 450px; }
+    body { width: 300px; }
+    p.break-line { margin: 0; }
+    #plugin_name { font-weight: bold; }
   </style>
 </head>
 <body>
-  <div class="popup-section">
-    <button id="go-to-options">Go to options</button>
+  <div>
+    <p><span id="plugin_name"></span></p>
+    <p>The plugin is enabled.</p>
+    <p>New section is added on the current pull request page and shows a corresponding build status.</p>
+    <p>
+      <p class="break-line">
+        <b>Note:</b> if you see a message indicating that no build was found, 
+        you need to configure your build configuration(s) to trigger builds for the <i>feature</i> branches.
+      </p>
+      <p class="break-line">
+        For more details read the TeamCity documentation: 
+        <a href="https://confluence.jetbrains.com/display/TCD10/Working+with+Feature+Branches">Working with Feature Branches</a>
+      </p>
+    </p>
   </div>
-  <script src="external/jquery-3.2.1.min.js"></script>
   <script src="scripts/popup.js"></script>
 </body>
 </html>

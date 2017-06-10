@@ -7,6 +7,7 @@
         var tcSuccessCount = 0;
         var tcNotFoundCount = 0;
         var tcErrorCount = 0;
+        var tcResponses = [];
 
         this.run = function() {
             
@@ -36,19 +37,16 @@
             chrome.runtime.onMessage.addListener(function(message) {
                 if (message.code === 'pull_request_response') {
                     if (message.success === true) 
-                        if (typeof message.data.lastCommitHash === 'string' && message.data.lastCommitHash.length > 0)
-                            onPullRequestSuccess(message.data);
-                        else
-                            onPullRequestError('Unexpected', 'Could not get last commit hash');
+                        onPullRequestSuccess(message);
                     else 
-                        onPullRequestError(message.data.status, message.data.statusText);
+                        onPullRequestError(message);
                 }
             });
         };
 
-        var onPullRequestSuccess = function(data) {
-            if (data.isAbandoned !== true) {
-                sendBuildStatusRequests(data.lastCommitHash);
+        var onPullRequestSuccess = function(message) {
+            if (message.data.isAbandoned !== true) {
+                sendBuildStatusRequests(message.data.lastCommitHash);
                 processBuildStatusResponses();
             } else {
                 tfsPageAdapter.removeLoaderBlock();
@@ -56,14 +54,14 @@
             }
         };
 
-        var onPullRequestError = function(status, statusText) {
+        var onPullRequestError = function(message) {
             tfsPageAdapter.removeLoaderBlock();
-            tfsPageAdapter.buildTfsErrorBlock(status, statusText);
+            tfsPageAdapter.buildTfsErrorBlock(message.data.status, message.data.statusText);
         };
 
         var sendBuildStatusRequests = function(commitHash) {
             // send request for each TC url
-            $.each(tcUrls, function(i, tcUrl) {
+            tcUrls.forEach(function(tcUrl) {
                 tcInProgressCount++;
                 tfsPageAdapter.updateLoaderBlock('tc', tcInProgressCount);
                 chrome.runtime.sendMessage({ code: 'build_status_request', tcUrl: tcUrl, commitHash: commitHash });
@@ -91,10 +89,12 @@
         var onBuildStatusSuccess = function(message) {
             tfsPageAdapter.buildTcSuccessBlock(message.data);
             tcSuccessCount++;
+            tcResponses.push({ tcUrl: message.fromTcUrl, status: 'success', data: message.data  });
         };
 
         var onBuildStatusNotFound = function(message) {
             tcNotFoundCount++;
+            tcResponses.push({ tcUrl: message.fromTcUrl, status: 'not_found', data: message.data  });
         };
 
         var onBuildStatusError = function(message) {
@@ -103,6 +103,7 @@
             }
             tfsPageAdapter.extendTcErrorBlockTitle(message.fromTcUrl, message.data.status, message.data.statusText);
             tcErrorCount++;
+            tcResponses.push({ tcUrl: message.fromTcUrl, status: 'error', data: message.data  });
         };
 
         var onBuildStatusLastResponse = function() {
@@ -113,15 +114,16 @@
         };
     }
 
-    $(document).ready(function() {
-        if (window.tfsPageAdapter) {
-            // tfsPageAdapter is defined
-            chrome.storage.sync.get({ options: [] }, function(items) {
+    var waiter = setInterval(function() {
+        if (window.tfsPageAdapter && window.tfsPageAdapter.isContainerLoaded() === true) {
+            
+            clearInterval(waiter);
 
+            chrome.storage.sync.get({ options: [] }, function(items) {
                 var tfsHostnames = [];
                 var goodTfsHostnames = [];
                 var tcUrls = [];
-                $.each(items.options, function(i, current) {
+                items.options.forEach(function(current) {
                     var alreadyChecked = tfsHostnames.indexOf(current.tfsHostname) >= 0;
                     if (alreadyChecked && goodTfsHostnames.indexOf(current.tfsHostname) === -1) {
                         return;
@@ -143,6 +145,6 @@
                 }
             });
         }
-    });
+    }, 100);
     
 })()

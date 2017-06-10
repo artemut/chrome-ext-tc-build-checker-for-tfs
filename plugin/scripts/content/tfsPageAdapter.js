@@ -45,14 +45,23 @@
             return document.location.pathname.split('/').filter(path => path !== '');
         };
 
+        this.isContainerLoaded = function() {
+            var container = getContainer();
+            return container.length > 0;
+        };
+
         this.buildMainView = function(tcCount) {
             tcTotalCount = tcCount;
-            var container = $('.hub-title .description-row .right-group');
+            var container = getContainer();
             mainView = $('<div/>', { 'class': 'chrome-ext-tc-build-checker_build-main-view' });
             var blockInfo = $('<div/>', { 'class': 'chrome-ext-tc-build-checker_info-block' });
             blockInfo.html('TeamCity builds: ');
             mainView.append(blockInfo);
             container.prepend(mainView);
+        };
+
+        var getContainer = function() {
+            return $('.hub-title .description-row .right-group');
         };
 
         this.buildLoaderBlock = function() {
@@ -126,7 +135,7 @@
         };
     }
 
-    // set global variable
+    // set global variable to be used in the injector.js
     window.tfsPageAdapter = new Tfs2017PageAdapter();
     
 })()

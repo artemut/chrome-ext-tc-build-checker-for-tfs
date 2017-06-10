@@ -3,7 +3,7 @@
     function TfsClient() {
         
         // URL structure:
-        // tfsserver:port/defaultcollection/_apis/git/repositories/<repositoryid>/pullRequests/<pullrequestid>/commits?api-version=3.0
+        // tfsserver:port/<collectionspath>/_apis/git/repositories/<repositoryid>/pullRequests/<pullrequestid>?api-version=3.0
 
         var getJson = function(url, callback) {
             var xhr = new XMLHttpRequest();
@@ -27,13 +27,23 @@
             var requestUrl = request.tfsUrl + '/' + collectionsPath + '/_apis/git/repositories/' + request.repositoryId + '/pullRequests/' + request.pullRequestId + '?api-version=3.0';
             getJson(requestUrl, {
                 onSuccess: function(response) {
-                    var data = {
-                        status: response.status,
-                        isAbandoned: response.status === 'abandoned',
-                        lastCommitHash: response.status === 'completed' ? response.lastMergeCommit.commitId : response.lastMergeSourceCommit.commitId
-                    };
-                    // send data to the tab that sent this request
-                    chrome.tabs.sendMessage(senderTabId, { code: 'pull_request_response', success: true, data: data });
+                    var lastCommitHash = response.status === 'completed' ? response.lastMergeCommit.commitId : response.lastMergeSourceCommit.commitId;
+                    if (typeof lastCommitHash === 'string' && lastCommitHash.length > 0) {
+                        var data = {
+                            status: response.status,
+                            isAbandoned: response.status === 'abandoned',
+                            lastCommitHash: lastCommitHash
+                        };
+                        // send data to the tab that sent this request
+                        chrome.tabs.sendMessage(senderTabId, { code: 'pull_request_response', success: true, data: data });
+                    } else {
+                        var data = {
+                            status: 'Unexpected',
+                            statusText: 'Could not get last commit hash'
+                        };
+                        // send data to the tab that sent this request
+                        chrome.tabs.sendMessage(senderTabId, { code: 'pull_request_response', success: false, data: data });
+                    }
                 },
                 onError: function(status, statusText) {
                     var data = {

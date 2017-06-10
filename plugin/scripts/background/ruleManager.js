@@ -29,7 +29,7 @@
                         if (tfsHostnames.indexOf(current.tfsHostname) === -1) {
                             tfsHostnames.push(current.tfsHostname);
                         } 
-                    }, this);
+                    });
                     var rules = buildRules(tfsHostnames);
                     chrome.declarativeContent.onPageChanged.addRules(rules);
                 });

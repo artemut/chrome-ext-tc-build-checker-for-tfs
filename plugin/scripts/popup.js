@@ -1,27 +1,22 @@
 (function() {
 
-  function Popup() {
-
-    this.initializeSections = function() {
-      
-      $('#go-to-options').click(openOptionsPage);
-    };
-
-    var openOptionsPage = function() {
-      if (chrome.runtime.openOptionsPage) {
-        // New way to open options pages, if supported (Chrome 42+).
-        chrome.runtime.openOptionsPage();
-      } else {
-        // Reasonable fallback.
-        window.open(chrome.runtime.getURL('options.html'));
-      }
-    };
-  }
-
-  $(document).ready(function() {
-    var popup = new Popup();
-    popup.initializeSections();
-  });
+    document.addEventListener('DOMContentLoaded', function() {
+        if (chrome.runtime.getManifest) {
+            var manifest = chrome.runtime.getManifest();
+            if (manifest && manifest.name) {
+                document.getElementById('plugin_name').innerHTML = manifest.name;
+            }
+        }
+        // links cannot be opened from popup page
+        // thus, need to handle click event and call chrome.tabs.create({...});
+        var links = document.getElementsByTagName('a');
+        for (var i = 0, max = links.length; i < max; i++) {
+            var a = links[i];
+            a.addEventListener('click', function() {
+                var href = this.getAttribute('href');
+                chrome.tabs.create({ url: href });
+            });
+        }
+    });
 
 })()
-
