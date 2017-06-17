@@ -17,14 +17,14 @@ Tested with:
 
 **Note:** you need to configure your build configuration(s) to trigger builds from **feature** branches so the plugin can find builds for commits that are not merged yet into the master (or develop) branch. For more details read the TeamCity documentation: [Working with Feature Branches](https://confluence.jetbrains.com/display/TCD10/Working+with+Feature+Branches).
 
-## How does it look like
+## How it looks like
 
-![](readme-images/build-status-section-1.jpg)
+![](screenshots/screen-success.png)
 
-![](readme-images/build-status-section-2.jpg)
+![](screenshots/screen-popup.png)
 
 ## How to configure plugin
 
 Open the options page of the plugin and add the hostname of the TFS and url of the TeamCity. You can add multiple combinations of TFS and TeamCity servers.
 
-![](readme-images/options-page.jpg)
+![](screenshots/screen-options.png)

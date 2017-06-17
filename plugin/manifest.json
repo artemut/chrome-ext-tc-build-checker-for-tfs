@@ -2,8 +2,13 @@
   "manifest_version": 2,
 
   "name": "TeamCity build checker for TFS pull requests",
-  "description": "This extension shows a status of a corresponding TeamCity build on the TFS pull request pages. Tested with TFS 2017 and TeamCity 10.x",
+  "description": "Shows a status of a corresponding TeamCity build on the TFS pull request pages. Tested with TFS 2017 and TeamCity 10.x",
   "version": "1.0",
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
 
   "permissions": [
     "tabs",
